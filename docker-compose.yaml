@@ -1,0 +1,29 @@
+services:
+  rabbitmq:
+    image: rabbitmq:management
+    ports:
+      - 5672:5672
+      - 15672:15672
+    networks:
+      - rabbit_net
+    command: rabbitmq-server
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  service:
+    build:
+      dockerfile: Dockerfile
+    environment:
+      RABBITMQ_URL: amqp://rabbitmq:5672
+    networks:
+      - rabbit_net
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    restart: on-failure
+
+networks:
+  rabbit_net:
