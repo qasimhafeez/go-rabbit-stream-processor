@@ -36,8 +36,8 @@ func main() {
 
 	log.Info("Application is ready to run")
 
-	go processor.New(inputQueueA, outputQueueA, database.D{}).Run(ctx)
-	go processor.New(inputQueueB, outputQueueB, database.D{}).Run(ctx)
+	go processor.New(inputQueueA, outputQueueA, database.D{}, "Stream-A").Run(ctx)
+	go processor.New(inputQueueB, outputQueueB, database.D{}, "Stream-B").Run(ctx)
 
 	select {}
 }
