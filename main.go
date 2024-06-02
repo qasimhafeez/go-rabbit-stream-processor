@@ -11,19 +11,33 @@ import (
 )
 
 func main() {
-	ctx := context.Background()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
-	inputQueue, err := queue.New(os.Getenv("RABBITMQ_URL"), "input-A")
+	// Queues for Stream A
+	inputQueueA, err := queue.New(os.Getenv("RABBITMQ_URL"), "input-A")
 	if err != nil {
-		log.WithError(err).Panic("Cannot create input queue")
+		log.WithError(err).Panic("Cannot create input queue A")
+	}
+	outputQueueA, err := queue.New(os.Getenv("RABBITMQ_URL"), "output-A")
+	if err != nil {
+		log.WithError(err).Panic("Cannot create output queue A")
 	}
 
-	outputQueue, err := queue.New(os.Getenv("RABBITMQ_URL"), "output-A")
+	// Queues for Stream B
+	inputQueueB, err := queue.New(os.Getenv("RABBITMQ_URL"), "input-B")
 	if err != nil {
-		log.WithError(err).Panic("Cannot create output queue")
+		log.WithError(err).Panic("Cannot create input queue B")
+	}
+	outputQueueB, err := queue.New(os.Getenv("RABBITMQ_URL"), "output-B")
+	if err != nil {
+		log.WithError(err).Panic("Cannot create output queue B")
 	}
 
 	log.Info("Application is ready to run")
 
-	processor.New(inputQueue, outputQueue, database.D{}).Run(ctx)
+	go processor.New(inputQueueA, outputQueueA, database.D{}).Run(ctx)
+	go processor.New(inputQueueB, outputQueueB, database.D{}).Run(ctx)
+
+	select {}
 }

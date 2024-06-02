@@ -36,7 +36,10 @@ func (p processor) Run(ctx context.Context) error {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
-		case delivery := <-deliveries:
+		case delivery, ok := <-deliveries:
+			if !ok {
+				return nil
+			}
 			if err := p.process(ctx, delivery); err != nil {
 				return err
 			}
